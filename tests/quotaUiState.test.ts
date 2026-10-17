@@ -78,3 +78,11 @@ describe('quota ui state', () => {
     expect(readQuotaUiState()).toBeNull();
   });
 });
+
+test('layout choice survives tab and sort changes and rejects invalid stored values', () => {
+  writeQuotaUiState({ view: 'cards' });
+  writeQuotaUiState({ tab: 'codex', sortMode: 'soonest' });
+  expect(readQuotaUiState()?.view).toBe('cards');
+  storage.setItem(KEY, JSON.stringify({ view: 'unsupported', tab: 'all' }));
+  expect(readQuotaUiState()?.view).toBeUndefined();
+});

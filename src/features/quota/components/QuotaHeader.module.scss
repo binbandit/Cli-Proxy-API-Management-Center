@@ -20,7 +20,7 @@
 
 .title {
   margin: 0;
-  font-size: clamp(26px, 3.2vw, 30px);
+  font-size: clamp(28px, 3.2vw, 34px);
   line-height: 1.15;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -155,5 +155,28 @@
 
   .spinning {
     animation: none;
+  }
+}
+
+.secondaryAction {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 9px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: $radius-full;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--dur-hover) var(--ease-out-strong);
+  &:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 3px;
   }
 }

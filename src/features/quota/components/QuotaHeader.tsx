@@ -4,6 +4,8 @@ import { useCountUp } from '@/hooks/motion';
 import styles from './QuotaHeader.module.scss';
 
 export type QuotaHeaderProps = {
+  showEmails: boolean;
+  onToggleEmails: () => void;
   totalCount: number;
   loadedCount: number;
   attentionCount: number;
@@ -55,6 +57,14 @@ export function QuotaHeader(props: QuotaHeaderProps) {
         </p>
       </div>
       <div className={styles.actions} data-reveal>
+        <button
+          type="button"
+          className={styles.secondaryAction}
+          onClick={props.onToggleEmails}
+          aria-pressed={props.showEmails}
+        >
+          {t(props.showEmails ? 'quota_management.hide_emails' : 'quota_management.show_emails')}
+        </button>
         <button
           type="button"
           className={styles.primaryAction}

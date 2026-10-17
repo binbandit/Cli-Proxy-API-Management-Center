@@ -137,3 +137,10 @@
     transform: none;
   }
 }
+
+@include mobile {
+  .tabs {
+    padding-inline-end: 24px;
+    mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent);
+  }
+}
