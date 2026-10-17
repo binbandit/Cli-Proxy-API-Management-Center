@@ -2290,5 +2290,11 @@
     "unavailable": "현재 초기화를 사용할 수 없습니다.",
     "rate_limited": "요청 속도가 제한되었습니다.",
     "auth_error": "인증이 거부되었습니다."
+  },
+  "dashboard_update": {
+    "title": "대시보드 업데이트 준비 완료",
+    "description": "변경 사항을 저장한 후 새로고침하여 최신 대시보드를 사용하세요.",
+    "later": "나중에",
+    "refresh": "지금 새로고침"
   }
 }

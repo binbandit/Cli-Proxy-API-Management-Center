@@ -2296,5 +2296,11 @@
     "unavailable": "Tính năng đặt lại hiện không khả dụng.",
     "rate_limited": "Yêu cầu bị giới hạn tốc độ.",
     "auth_error": "Ủy quyền đã bị từ chối."
+  },
+  "dashboard_update": {
+    "title": "Bản cập nhật bảng điều khiển đã sẵn sàng",
+    "description": "Lưu các thay đổi, rồi tải lại để sử dụng bảng điều khiển mới nhất.",
+    "later": "Để sau",
+    "refresh": "Tải lại ngay"
   }
 }

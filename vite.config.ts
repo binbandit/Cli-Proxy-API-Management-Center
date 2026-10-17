@@ -4,6 +4,9 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 import path from 'path';
 import { execSync } from 'child_process';
 import fs from 'fs';
+import { randomUUID } from 'crypto';
+
+const dashboardBuild = randomUUID();
 
 // Get version from environment, git tag, or package.json
 function getVersion(): string {
@@ -41,7 +44,14 @@ export default defineConfig({
     react(),
     viteSingleFile({
       removeViteModuleLoader: true
-    })
+    }),
+    {
+      name: 'dashboard-build-marker',
+      transformIndexHtml: {
+        order: 'post',
+        handler: (html) => html.replace('<head>', `<head><meta name="cliproxy-build" content="${dashboardBuild}">`)
+      }
+    }
   ],
   define: {
     __APP_VERSION__: JSON.stringify(getVersion())

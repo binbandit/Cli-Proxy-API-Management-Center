@@ -2316,5 +2316,11 @@
     "unavailable": "重置暫不可用。",
     "rate_limited": "請求過於頻繁。",
     "auth_error": "授權遭拒。"
+  },
+  "dashboard_update": {
+    "title": "儀表板更新已就緒",
+    "description": "請先儲存變更，再重新整理以使用最新版儀表板。",
+    "later": "稍後",
+    "refresh": "立即重新整理"
   }
 }

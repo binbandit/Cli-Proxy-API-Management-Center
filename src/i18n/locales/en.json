@@ -2290,5 +2290,11 @@
     "unavailable": "Resets are currently unavailable.",
     "rate_limited": "Request rate limited.",
     "auth_error": "Authorization was refused."
+  },
+  "dashboard_update": {
+    "title": "Dashboard update ready",
+    "description": "Save your changes, then refresh to use the latest dashboard.",
+    "later": "Later",
+    "refresh": "Refresh now"
   }
 }

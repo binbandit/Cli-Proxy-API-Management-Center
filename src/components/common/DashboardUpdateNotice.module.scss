@@ -1,0 +1,31 @@
+.notice {
+  position: fixed;
+  z-index: $z-dropdown;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  width: min(26rem, calc(100vw - 2rem));
+  padding: 1rem;
+  border: 1px solid var(--border-primary);
+  border-radius: $radius-lg;
+  background: var(--floating-surface);
+  color: var(--text-primary);
+  box-shadow: var(--floating-shadow);
+
+  strong {
+    font-size: 0.95rem;
+  }
+
+  p {
+    margin: 0.4rem 0 0;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}

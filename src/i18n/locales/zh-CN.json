@@ -2288,5 +2288,11 @@
     "unavailable": "重置暂不可用。",
     "rate_limited": "请求过于频繁。",
     "auth_error": "授权被拒绝。"
+  },
+  "dashboard_update": {
+    "title": "仪表盘更新已就绪",
+    "description": "请先保存更改，再刷新以使用最新版仪表盘。",
+    "later": "稍后",
+    "refresh": "立即刷新"
   }
 }
