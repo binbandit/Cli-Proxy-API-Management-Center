@@ -1,0 +1,165 @@
+@use '../../../styles/mixins' as *;
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 24px 26px 20px;
+  border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+  border-radius: 16px;
+  background: var(--bg-primary);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.count {
+  font-size: 15px;
+  color: var(--text-tertiary);
+}
+
+.summary {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.headline {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+
+  strong {
+    font-size: 52px;
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+  }
+
+  span {
+    font-size: 16px;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.weights {
+  color: var(--text-tertiary);
+}
+
+.stats {
+  display: flex;
+  gap: 48px;
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+
+  dt {
+    font-size: 14px;
+    color: var(--text-tertiary);
+  }
+
+  dd {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+}
+
+.who {
+  margin-right: 6px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--text-primary) 7%, transparent);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding-top: 4px;
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+.legendTitle {
+  color: var(--text-primary);
+  margin-right: 14px;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.swatchSolid,
+.swatchDashed {
+  display: inline-block;
+  width: 18px;
+  height: 0;
+  border-top: 2px solid var(--pool-color);
+}
+
+.swatchDashed {
+  border-top-style: dashed;
+}
+
+.accounts {
+  margin-top: 14px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-color);
+}
+
+@include mobile {
+  .card {
+    padding: 18px 16px 16px;
+    border-radius: 14px;
+  }
+
+  .headline strong {
+    font-size: 40px;
+  }
+
+  .stats {
+    gap: 14px 28px;
+  }
+}

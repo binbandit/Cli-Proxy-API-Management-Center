@@ -10,6 +10,7 @@ import {
   CPA_BUILD_DATE_HEADER_KEYS,
   CPA_SUPPORT_PLUGIN_HEADER_KEYS,
   CPA_VERSION_HEADER_KEYS,
+  MANAGEMENT_API_PREFIX,
   REQUEST_TIMEOUT_MS,
   VERSION_HEADER_KEYS,
 } from '@/utils/constants';
@@ -200,6 +201,17 @@ class ApiClient {
     const fallback = new Error(fallbackMessage) as ApiError;
     fallback.name = 'ApiError';
     return fallback;
+  }
+
+  /**
+   * Absolute URL of a plugin-declared management route. Plugins register their routes under
+   * the `/v0/management` base, so they cannot be reached through the v8 prefix.
+   */
+  pluginRouteUrl(path: string): string {
+    const origin = this.apiBase.endsWith(MANAGEMENT_API_PREFIX)
+      ? this.apiBase.slice(0, -MANAGEMENT_API_PREFIX.length)
+      : this.apiBase;
+    return `${origin}/v0/management/${path.replace(/^\/+/, '')}`;
   }
 
   /**

@@ -9,8 +9,7 @@ import { apiCallApi, getApiCallErrorMessage, type ApiCallResult } from '@/servic
 import { apiClient } from '@/services/api/client';
 import { CLAUDE_CONFIG, hasClaudeUsageData } from '@/features/quota/providers/claude/data';
 import { ClaudeQuotaBody } from '@/features/quota/providers/claude/ClaudeQuotaBody';
-import { buildTimelineLane } from '@/features/quota/quotaTimelineModel';
-import { nextRecoveryMs } from '@/features/quota/resetSchedule';
+import { collectQuotaRowInstants } from '@/features/quota/resetSchedule';
 import { QUOTA_CLASS_KEYS, bindQuotaClasses } from '@/features/quota/types';
 import {
   captureQuotaCacheGeneration,
@@ -225,7 +224,7 @@ describe('Claude quota usage reads', () => {
       await CLAUDE_CONFIG.fetchQuota(file, translations.t)
     );
     expect(state.windows.map((window) => window.id)).not.toContain('cloud-session-credits');
-    expect(nextRecoveryMs('claude', state, Date.parse('2026-10-31T00:00:00Z'))).toBe(
+    expect(collectQuotaRowInstants('claude', state).map((instant) => instant.atMs)).toContain(
       Date.parse('2026-11-01T00:00:00Z')
     );
   });
@@ -347,7 +346,7 @@ describe('Claude quota usage reads', () => {
     }
   );
 
-  test('stores raw API-call data once for cards, page counters, recovery sorting, and timeline', async () => {
+  test('stores raw API-call data once for cards, page counters and reset scheduling', async () => {
     const post = spyOn(apiClient, 'post').mockImplementation(async (_path, request) => ({
       status_code: 200,
       header: {},
@@ -371,18 +370,9 @@ describe('Claude quota usage reads', () => {
           (entry) => entry.status === 'success'
         )
       ).toHaveLength(1);
-      expect(nextRecoveryMs('claude', stored, Date.parse(observedAt))).toBe(
+      expect(collectQuotaRowInstants('claude', stored).map((instant) => instant.atMs)).toContain(
         Date.parse('2026-10-15T09:00:00Z')
       );
-      expect(
-        buildTimelineLane({
-          provider: 'claude',
-          name: file.name,
-          displayName: file.name,
-          quota: stored,
-          maxPeriodHours: 14 * 24,
-        }).anchorMs
-      ).toBe(Date.parse('2026-10-15T09:00:00Z'));
       expect(post).toHaveBeenCalledTimes(2);
       store.setClaudeQuota((previous) => previous);
       expect(CLAUDE_CONFIG.storeSelector(useQuotaStore.getState())[file.name]).toBe(state);

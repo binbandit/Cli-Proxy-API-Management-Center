@@ -1,39 +1,47 @@
 import {
-  QUOTA_SORT_MODES,
+  BURN_SPANS,
+  FUTURE_USAGE,
+  POOL_METRICS,
   QUOTA_TAB_ORDER,
-  type QuotaSortMode,
+  type BurnSpanId,
+  type FutureUsageId,
+  type PoolMetricId,
   type QuotaTabId,
 } from './constants';
 
-/** 额度页 UI 偏好：会话级持久化（sessionStorage），跨会话不携带。 */
+/** Quota page preferences, kept for the browser session (sessionStorage). */
 export type QuotaUiState = {
-  view?: 'ledger' | 'cards';
   tab?: QuotaTabId;
-  sortMode?: QuotaSortMode;
+  metric?: PoolMetricId;
+  burnSpan?: BurnSpanId;
+  future?: FutureUsageId;
+  showAccounts?: boolean;
 };
 
 const QUOTA_UI_STATE_KEY = 'quotaPage.uiState';
 
 const QUOTA_TAB_ID_SET = new Set<string>(['all', ...QUOTA_TAB_ORDER]);
-const QUOTA_SORT_MODE_SET = new Set<string>(QUOTA_SORT_MODES);
 
 export const isQuotaTabId = (value: unknown): value is QuotaTabId =>
   typeof value === 'string' && QUOTA_TAB_ID_SET.has(value);
 
-export const isQuotaSortMode = (value: unknown): value is QuotaSortMode =>
-  typeof value === 'string' && QUOTA_SORT_MODE_SET.has(value);
+const oneOf = <T extends string>(choices: readonly T[], value: unknown): T | undefined =>
+  choices.find((choice) => choice === value);
 
 export const readQuotaUiState = (): QuotaUiState | null => {
   if (typeof window === 'undefined') return null;
   try {
     const raw = window.sessionStorage.getItem(QUOTA_UI_STATE_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as QuotaUiState;
+    const parsed: unknown = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object') return null;
+    const stored = parsed as Record<string, unknown>;
     return {
-      view: parsed.view === 'ledger' || parsed.view === 'cards' ? parsed.view : undefined,
-      tab: isQuotaTabId(parsed.tab) ? parsed.tab : undefined,
-      sortMode: isQuotaSortMode(parsed.sortMode) ? parsed.sortMode : undefined,
+      tab: isQuotaTabId(stored.tab) ? stored.tab : undefined,
+      metric: oneOf(POOL_METRICS, stored.metric),
+      burnSpan: oneOf(Object.keys(BURN_SPANS) as BurnSpanId[], stored.burnSpan),
+      future: oneOf(Object.keys(FUTURE_USAGE) as FutureUsageId[], stored.future),
+      showAccounts: typeof stored.showAccounts === 'boolean' ? stored.showAccounts : undefined,
     };
   } catch {
     return null;
@@ -43,9 +51,8 @@ export const readQuotaUiState = (): QuotaUiState | null => {
 /**
  * Merge into whatever is already stored.
  *
- * Callers write one preference at a time — the tab strip knows nothing about
- * the sort control — so a whole-object write would silently drop the other
- * field every time either one changed.
+ * Each control writes one preference and knows nothing about the others, so a whole-object
+ * write would silently drop the other fields every time one changed.
  */
 export const writeQuotaUiState = (state: QuotaUiState) => {
   if (typeof window === 'undefined') return;
@@ -53,6 +60,6 @@ export const writeQuotaUiState = (state: QuotaUiState) => {
     const next = { ...readQuotaUiState(), ...state };
     window.sessionStorage.setItem(QUOTA_UI_STATE_KEY, JSON.stringify(next));
   } catch {
-    // ignore
+    // Storage can be unavailable (private mode); preferences then last for the visit only.
   }
 };

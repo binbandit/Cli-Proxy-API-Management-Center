@@ -1,21 +1,13 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { ClaudeQuotaState, ResolvedTheme } from '@/types';
+import type { ClaudeQuotaState } from '@/types';
 import { IconChevronDown, IconRefreshCw } from '@/components/ui/icons';
-import { getAuthFileIcon, getTypeLabel } from '@/features/authFiles/constants';
+import { getTypeLabel } from '@/features/authFiles/constants';
 import { getQuotaDisplayName } from '@/utils/quota/identity';
 import { buildResetDisplay } from '@/utils/quota';
 import { useNow } from '@/hooks/useNow';
-import {
-  ledgerWindows,
-  maskQuotaEmail,
-  summarizeLedgerWindows,
-  type LedgerWindow,
-} from '../quotaLedgerModel';
-import type { QuotaFileEntry } from '../logic';
-import type { QuotaCardState } from '../providers';
+import { ledgerWindows, maskQuotaEmail, type LedgerWindow } from '../quotaLedgerModel';
 import type { QuotaProviderType } from '../providers/types';
-import { QUOTA_TAB_ORDER } from '../constants';
 import { QuotaCard, type QuotaCardProps } from './QuotaCard';
 import { QUOTA_PROGRESS_HIGH_THRESHOLD, QUOTA_PROGRESS_MEDIUM_THRESHOLD } from './QuotaMeter';
 import styles from './QuotaLedger.module.scss';
@@ -61,111 +53,23 @@ function Meter({ window }: { window: LedgerWindow }) {
   );
 }
 
-export function QuotaSummary({
-  entries,
-  quotaFor,
-  resolvedTheme,
-}: {
-  entries: QuotaFileEntry[];
-  quotaFor: (entry: QuotaFileEntry) => QuotaCardState | undefined;
-  resolvedTheme: ResolvedTheme;
-}) {
-  const { t } = useTranslation();
-  const groups = QUOTA_TAB_ORDER.map((type) => ({
-    type,
-    entries: entries.filter((entry) => entry.type === type),
-  })).filter((group) => group.entries.length);
-  if (!groups.length) return null;
-  return (
-    <section className={styles.summary} aria-label={t('quota_management.ledger_summary')}>
-      {groups.map(({ type, entries: group }) => {
-        const summary =
-          type === 'plugin'
-            ? null
-            : summarizeLedgerWindows(
-                group.map((entry) =>
-                  ledgerWindows(
-                    type,
-                    quotaFor(entry)?.status === 'success' ? quotaFor(entry) : undefined,
-                    t
-                  )
-                )
-              );
-        return (
-          <div key={type} className={styles.summaryItem}>
-            <div className={styles.summaryHeading}>
-              <span>
-                <img src={getAuthFileIcon(type, resolvedTheme) ?? undefined} alt="" />
-                {getTypeLabel(t, type)}
-              </span>
-              <small>{t('quota_management.meta_credentials', { count: group.length })}</small>
-            </div>
-            <div className={styles.summaryLabel}>
-              {summary?.label ?? t('quota_management.ledger_remaining')}
-            </div>
-            <div className={styles.summaryValue} title={t('quota_management.ledger_sum_hint')}>
-              <strong>{summary?.total == null ? '—' : `${Math.round(summary.total)}%`}</strong>
-              {summary && summary.capacity > 0 && (
-                <span>{t('quota_management.ledger_capacity', { capacity: summary.capacity })}</span>
-              )}
-            </div>
-            <div className={styles.segments} aria-hidden="true">
-              {group.map((entry) => {
-                const windows = ledgerWindows(
-                  type,
-                  quotaFor(entry)?.status === 'success' ? quotaFor(entry) : undefined,
-                  t
-                );
-                const match = summary
-                  ? windows.find(
-                      (window) =>
-                        window.id === summary.values[0]?.id &&
-                        window.periodHours === summary.values[0]?.periodHours
-                    )
-                  : undefined;
-                const value = match?.remaining;
-                return (
-                  <div
-                    key={`${entry.file.name}:${entry.file.authIndex ?? ''}`}
-                    className={styles.track}
-                  >
-                    <span
-                      className={
-                        value == null
-                          ? styles.unknown
-                          : value >= QUOTA_PROGRESS_HIGH_THRESHOLD
-                            ? styles.high
-                            : value >= QUOTA_PROGRESS_MEDIUM_THRESHOLD
-                              ? styles.medium
-                              : styles.low
-                      }
-                      style={{ width: `${value ?? 0}%` }}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-            <ResetTime at={summary?.resetAtMs ?? null} />
-            {(summary?.loaded ?? 0) < group.length && (
-              <div className={styles.coverage}>
-                {t('quota_management.ledger_coverage', {
-                  loaded: summary?.loaded ?? 0,
-                  total: group.length,
-                })}
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </section>
-  );
-}
+export type QuotaLedgerRowProps = QuotaCardProps & {
+  showEmails: boolean;
+  /** Windows recorded in the background, shown until the user fetches this account. */
+  recordedWindows?: LedgerWindow[];
+  /** Freshness of the recorded windows, or why the last background read failed. */
+  recordedNote?: ReactNode;
+};
 
-export function QuotaLedgerRow(props: QuotaCardProps & { showEmails: boolean }) {
+export function QuotaLedgerRow(props: QuotaLedgerRowProps) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
-  const { entry, quota, canRefresh, onRefresh, showEmails } = props;
-  const windows = ledgerWindows(entry.type, quota, t);
+  const { entry, quota, canRefresh, onRefresh, showEmails, recordedWindows = [] } = props;
+  const fetchedWindows = ledgerWindows(entry.type, quota, t);
+  // A fetch the user asked for wins; until then the background recording stands in.
+  const showFetched =
+    fetchedWindows.length > 0 && (quota?.status === 'success' || recordedWindows.length === 0);
+  const windows = showFetched ? fetchedWindows : recordedWindows;
   const fullName = getQuotaDisplayName(entry.file);
   const name = showEmails ? fullName : maskQuotaEmail(fullName);
   const busy = quota?.status === 'loading' || props.resetting;
@@ -185,6 +89,9 @@ export function QuotaLedgerRow(props: QuotaCardProps & { showEmails: boolean }) 
             )}
             <IconChevronDown size={13} className={expanded ? styles.chevronOpen : undefined} />
           </button>
+          {!showFetched && props.recordedNote && (
+            <span className={styles.recordedNote}>{props.recordedNote}</span>
+          )}
         </div>
         <div className={styles.metrics}>
           {windows.length ? (
@@ -208,7 +115,7 @@ export function QuotaLedgerRow(props: QuotaCardProps & { showEmails: boolean }) 
           {t('auth_files.quota_refresh_single')}
         </button>
       </div>
-      {windows.length > 0 && (quota?.status !== 'success' || claudeQuota?.stale === true) && (
+      {showFetched && (quota?.status !== 'success' || claudeQuota?.stale === true) && (
         <p className={styles.status} role="status">
           {t('claude_quota.stale_snapshot', {
             time: claudeQuota?.observedAt ? new Date(claudeQuota.observedAt).toLocaleString() : '—',

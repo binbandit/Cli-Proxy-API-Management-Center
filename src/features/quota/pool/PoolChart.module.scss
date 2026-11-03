@@ -1,0 +1,112 @@
+.wrap {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.svg {
+  display: block;
+  overflow: visible;
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.grid {
+  stroke: var(--chart-grid);
+  stroke-width: 1;
+}
+
+.baseline {
+  stroke: color-mix(in srgb, var(--chart-axis) 45%, transparent);
+  stroke-width: 1;
+}
+
+.axis {
+  fill: var(--chart-axis);
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.recorded,
+.projected {
+  fill: none;
+  stroke: var(--pool-color);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.projected {
+  stroke-dasharray: 6 5;
+  stroke-linecap: butt;
+}
+
+/* Labels on top of lines get a halo in the card color so the line never cuts through them. */
+.resetLabel,
+.emptyLabel,
+.nowLabel {
+  paint-order: stroke;
+  stroke: var(--bg-primary);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+.resetLabel {
+  fill: var(--text-secondary);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.nowLine {
+  stroke: color-mix(in srgb, var(--text-tertiary) 70%, transparent);
+  stroke-width: 1;
+}
+
+.nowLabel {
+  fill: var(--text-secondary);
+  font-size: 13px;
+}
+
+.nowDot {
+  fill: var(--pool-color);
+  stroke: var(--bg-primary);
+  stroke-width: 2;
+}
+
+.emptyLabel {
+  fill: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.emptyDot {
+  fill: var(--bg-primary);
+  stroke: var(--text-primary);
+  stroke-width: 2;
+}
+
+.hoverLine {
+  stroke: color-mix(in srgb, var(--text-tertiary) 55%, transparent);
+  stroke-width: 1;
+}
+
+.hoverDot {
+  fill: var(--pool-color);
+  stroke: var(--bg-primary);
+  stroke-width: 2;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 2;
+  padding: 6px 10px;
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  background: var(--floating-surface);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: var(--floating-shadow);
+}

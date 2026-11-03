@@ -101,41 +101,6 @@ export function ledgerWindows(
   ];
 }
 
-/** Sum one common window across accounts. Never mix model scopes or durations. */
-export function summarizeLedgerWindows(accounts: LedgerWindow[][]) {
-  const candidates = new Map<string, { window: LedgerWindow; values: LedgerWindow[] }>();
-  for (const windows of accounts) {
-    const seen = new Set<string>();
-    for (const window of windows) {
-      const key = `${window.id}:${window.periodHours}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      const candidate = candidates.get(key) ?? { window, values: [] };
-      candidate.values.push(window);
-      candidates.set(key, candidate);
-    }
-  }
-  const selected = [...candidates.values()].sort((a, b) => {
-    const priority = (row: LedgerWindow) =>
-      ['weekly', 'seven_day', 'seven-day'].includes(row.id) ? 2 : row.periodHours === 168 ? 1 : 0;
-    return priority(b.window) - priority(a.window) || b.values.length - a.values.length;
-  })[0];
-  if (!selected) return null;
-  const known = selected.values.filter((row) => row.remaining !== null);
-  return {
-    label: selected.window.label,
-    values: selected.values,
-    total: known.length ? known.reduce((sum, row) => sum + row.remaining!, 0) : null,
-    capacity: known.length * 100,
-    loaded: known.length,
-    resetAtMs: selected.values.reduce<number | null>(
-      (earliest, row) =>
-        row.resetAtMs === null ? earliest : Math.min(earliest ?? Infinity, row.resetAtMs),
-      null
-    ),
-  };
-}
-
 export function maskQuotaEmail(name: string): string {
   return name.replace(
     /([\p{L}\p{N}._%+-]+)@([\p{L}\p{N}.-]+)/gu,

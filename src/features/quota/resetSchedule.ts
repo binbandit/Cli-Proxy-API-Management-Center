@@ -222,20 +222,3 @@ export function pickUrgentRowId(
     nowMs
   );
 }
-
-/**
- * Soonest upcoming recovery instant for a whole credential — the sort key for
- * "soonest recovery first". Null when nothing is loaded or nothing is pending.
- */
-export function nextRecoveryMs(
-  provider: QuotaProviderType,
-  quota: unknown,
-  nowMs: number
-): number | null {
-  let best: number | null = null;
-  for (const instant of collectQuotaRowInstants(provider, quota)) {
-    if (instant.atMs <= nowMs) continue;
-    if (best === null || instant.atMs < best) best = instant.atMs;
-  }
-  return best;
-}

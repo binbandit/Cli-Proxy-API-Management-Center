@@ -4,13 +4,17 @@
 
 import type { AuthFileItem } from '@/types';
 
-export function resolveAuthProvider(file: AuthFileItem): string {
-  const raw = file.provider ?? file.type ?? '';
-  const key = String(raw).trim().toLowerCase().replace(/_/g, '-');
+/** Canonical provider key for a raw provider name, such as "x_ai" or "kimi-ai". */
+export function normalizeProviderId(raw: string): string {
+  const key = raw.trim().toLowerCase().replace(/_/g, '-');
   if (key === 'x-ai' || key === 'grok') return 'xai';
   // Kimi International (kimi.ai) accounts share Kimi's quota API on another host.
   if (key === 'kimi-ai') return 'kimi';
   return key;
+}
+
+export function resolveAuthProvider(file: AuthFileItem): string {
+  return normalizeProviderId(String(file.provider ?? file.type ?? ''));
 }
 
 export function isAntigravityFile(file: AuthFileItem): boolean {

@@ -1,11 +1,8 @@
 @use '../../../styles/mixins' as *;
 
-/* 额度页头部：与凭证库/仪表盘同语汇（紧排标题 / ▍mono 遥测 / 墨色药丸）。
- * meta 行遥测语义：已加载数是「活数据」（绿），需关注数走失败色，其余中性。 */
-
 .header {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 16px 24px;
   flex-wrap: wrap;
@@ -13,16 +10,17 @@
 
 .copy {
   display: flex;
-  flex-direction: column;
-  gap: 7px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 20px;
   min-width: 0;
 }
 
 .title {
   margin: 0;
-  font-size: clamp(28px, 3.2vw, 34px);
-  line-height: 1.15;
-  font-weight: 700;
+  font-size: clamp(26px, 2.6vw, 30px);
+  line-height: 1.2;
+  font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--text-primary);
 }
@@ -33,80 +31,43 @@
   align-items: baseline;
   flex-wrap: wrap;
   gap: 4px 8px;
-  font-family: $font-mono;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 17px;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
   color: var(--text-secondary);
-
-  /* 终端游标：结构记号，与凭证库 meta 行同语汇 */
-  &::before {
-    content: '▍';
-    color: var(--viz-success);
-    font-size: 13px;
-    line-height: 1;
-    align-self: center;
-    margin-right: 1px;
-  }
 }
 
 .metaDot {
-  color: var(--text-quaternary);
+  color: var(--text-tertiary);
   user-select: none;
 }
-
-.metaTotal {
-  color: var(--text-secondary);
-}
-
-.metaLoaded {
-  color: var(--viz-success);
-}
-
-.metaMuted {
-  color: var(--text-tertiary);
-}
-
-.metaAttention {
-  color: var(--viz-failure);
-}
-
-/* ---------- 动作区 ---------- */
 
 .actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
-/* 墨色药丸主按钮（深色主题自动反相） */
+.secondaryAction,
 .primaryAction {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  border: 0;
-  cursor: pointer;
-  background: var(--text-primary);
-  color: var(--bg-secondary);
-  border-radius: $radius-full;
-  padding: 10px 18px;
-  font-size: 13.5px;
-  font-weight: 600;
+  gap: 10px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
   line-height: 1;
+  cursor: pointer;
   transition:
-    transform var(--dur-press, 160ms) var(--ease-out-strong, ease-out),
-    background-color var(--dur-hover, 200ms) var(--ease-out-strong, ease-out),
-    box-shadow var(--dur-hover, 200ms) var(--ease-out-strong, ease-out);
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.55;
-  }
+    transform var(--dur-press) var(--ease-out-strong),
+    background-color var(--dur-hover) var(--ease-out-strong),
+    color var(--dur-hover) var(--ease-out-strong);
 
   &:active:not(:disabled) {
-    transform: translateY(0) scale(0.97);
+    transform: scale(0.98);
   }
 
   &:focus-visible {
@@ -115,11 +76,28 @@
   }
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .primaryAction:hover:not(:disabled) {
-    transform: translateY(-1px);
-    background: color-mix(in srgb, var(--text-primary) 86%, var(--bg-secondary));
-    box-shadow: 0 12px 26px color-mix(in srgb, var(--text-primary) 22%, transparent);
+.secondaryAction {
+  border: 0;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+
+  &:hover {
+    background: var(--bg-hover);
+  }
+}
+
+.primaryAction {
+  border: 0;
+  background: var(--primary-color);
+  color: var(--primary-contrast);
+
+  &:hover:not(:disabled) {
+    background: var(--primary-hover);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 }
 
@@ -145,38 +123,17 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .secondaryAction,
   .primaryAction {
     transition: none;
   }
 
+  .secondaryAction:active,
   .primaryAction:active:not(:disabled) {
     transform: none;
   }
 
   .spinning {
     animation: none;
-  }
-}
-
-.secondaryAction {
-  display: inline-flex;
-  align-items: center;
-  min-height: 36px;
-  padding: 9px 16px;
-  border: 1px solid var(--border-color);
-  border-radius: $radius-full;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color var(--dur-hover) var(--ease-out-strong);
-  &:hover {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--primary-color);
-    outline-offset: 3px;
   }
 }

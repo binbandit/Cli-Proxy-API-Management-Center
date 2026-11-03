@@ -1,39 +1,11 @@
 import { describe, expect, test } from 'bun:test';
 import type { TFunction } from 'i18next';
 import type { ClaudeQuotaState } from '@/types';
-import {
-  ledgerWindows,
-  maskQuotaEmail,
-  summarizeLedgerWindows,
-  type LedgerWindow,
-} from '@/features/quota/quotaLedgerModel';
+import { ledgerWindows, maskQuotaEmail } from '@/features/quota/quotaLedgerModel';
+
 const t = ((key: string) => key) as TFunction;
-const window = (id: string, remaining: number | null, periodHours = 168): LedgerWindow => ({
-  id,
-  label: id,
-  remaining,
-  periodHours,
-  resetAtMs: null,
-});
 
 describe('quota ledger reporting', () => {
-  test('unknown amounts are excluded from capacity instead of becoming unused quota', () => {
-    const result = summarizeLedgerWindows([[window('weekly', 17)], [window('weekly', null)], []]);
-    expect(result?.total).toBe(17);
-    expect(result?.capacity).toBe(100);
-    expect(result?.loaded).toBe(1);
-    expect(summarizeLedgerWindows([[window('weekly', null)]])?.total).toBeNull();
-    expect(summarizeLedgerWindows([])).toBeNull();
-  });
-  test('only matching scopes and durations contribute to a provider total', () => {
-    const result = summarizeLedgerWindows([
-      [window('weekly', 6), window('spark-weekly', 100)],
-      [window('weekly', 4), window('spark-weekly', 100)],
-      [window('weekly', 90, 5)],
-    ]);
-    expect(result?.total).toBe(10);
-    expect(result?.capacity).toBe(200);
-  });
   test('remaining quota is available without a reset timestamp', () => {
     const quota: ClaudeQuotaState = {
       status: 'success',

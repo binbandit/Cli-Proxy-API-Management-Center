@@ -1,9 +1,9 @@
 /**
  * Session-scoped quota page preferences.
  *
- * The merge-on-write case is the one that matters: the tab strip and the sort
- * control each write a single field and know nothing about the other, so a
- * whole-object write would make changing a tab silently reset the sort.
+ * The merge-on-write case is the one that matters: each control writes a single
+ * field and knows nothing about the others, so a whole-object write would make
+ * changing a tab silently reset the chart settings.
  */
 
 import { afterAll, beforeEach, describe, expect, test } from 'bun:test';
@@ -46,26 +46,51 @@ afterAll(() => {
 });
 
 describe('quota ui state', () => {
-  test('round-trips both preferences', () => {
-    writeQuotaUiState({ tab: 'codex', sortMode: 'soonest' });
-    expect(readQuotaUiState()).toEqual({ tab: 'codex', sortMode: 'soonest' });
+  test('round-trips every preference', () => {
+    const state = {
+      tab: 'codex',
+      metric: 'drain',
+      burnSpan: '6h',
+      future: 'half',
+      showAccounts: true,
+    } as const;
+    writeQuotaUiState(state);
+    expect(readQuotaUiState()).toEqual(state);
   });
 
-  test('retains the Devin tab across visits', () => {
-    writeQuotaUiState({ tab: 'devin', sortMode: 'soonest' });
-    expect(readQuotaUiState()).toEqual({ tab: 'devin', sortMode: 'soonest' });
+  test('drops a stored tab for a provider the page no longer shows', () => {
+    storage.setItem(KEY, JSON.stringify({ tab: 'devin', metric: 'drain' }));
+    expect(readQuotaUiState()).toMatchObject({ tab: undefined, metric: 'drain' });
   });
 
-  test('writing one preference preserves the other', () => {
-    writeQuotaUiState({ sortMode: 'soonest' });
-    writeQuotaUiState({ tab: 'kimi' });
-
-    expect(readQuotaUiState()).toEqual({ tab: 'kimi', sortMode: 'soonest' });
+  test('writing one preference preserves the others', () => {
+    writeQuotaUiState({ burnSpan: '1h', showAccounts: false });
+    writeQuotaUiState({ tab: 'claude' });
+    expect(readQuotaUiState()).toMatchObject({
+      tab: 'claude',
+      burnSpan: '1h',
+      showAccounts: false,
+    });
   });
 
   test('rejects values that are not part of the current contract', () => {
-    storage.setItem(KEY, JSON.stringify({ tab: 'not-a-tab', sortMode: 'by-vibes' }));
-    expect(readQuotaUiState()).toEqual({ tab: undefined, sortMode: undefined });
+    storage.setItem(
+      KEY,
+      JSON.stringify({
+        tab: 'not-a-tab',
+        metric: 'vibes',
+        burnSpan: '2h',
+        future: 'x',
+        showAccounts: 'yes',
+      })
+    );
+    expect(readQuotaUiState()).toEqual({
+      tab: undefined,
+      metric: undefined,
+      burnSpan: undefined,
+      future: undefined,
+      showAccounts: undefined,
+    });
   });
 
   test('survives absent, malformed, and non-object payloads', () => {
@@ -77,12 +102,4 @@ describe('quota ui state', () => {
     storage.setItem(KEY, '"a string"');
     expect(readQuotaUiState()).toBeNull();
   });
-});
-
-test('layout choice survives tab and sort changes and rejects invalid stored values', () => {
-  writeQuotaUiState({ view: 'cards' });
-  writeQuotaUiState({ tab: 'codex', sortMode: 'soonest' });
-  expect(readQuotaUiState()?.view).toBe('cards');
-  storage.setItem(KEY, JSON.stringify({ view: 'unsupported', tab: 'all' }));
-  expect(readQuotaUiState()?.view).toBeUndefined();
 });

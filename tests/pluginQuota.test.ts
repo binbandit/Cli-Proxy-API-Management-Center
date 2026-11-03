@@ -68,9 +68,9 @@ describe('generic plugin quota', () => {
   });
 
   test('keeps built-in quota cards when a plugin also advertises quota', () => {
-    const builtIns = QUOTA_TAB_ORDER.filter((type) => type !== 'plugin');
-    expect([...BUILT_IN_QUOTA_PROVIDERS].sort()).toEqual([...builtIns].sort());
-    for (const type of builtIns) {
+    const pageProviders = new Set<string>(QUOTA_TAB_ORDER);
+    for (const type of BUILT_IN_QUOTA_PROVIDERS) {
+      const onPage = pageProviders.has(type);
       for (const capability of [
         { quota_probe: { url: 'https://quota.example.test/usage' } },
         { quota_provider: type },
@@ -86,7 +86,7 @@ describe('generic plugin quota', () => {
         const file = normalizeAuthFilesResponse({ files: [raw] }).files[0];
         for (const candidate of [raw, file]) {
           expect(isPluginQuotaFile(candidate)).toBe(false);
-          expect(resolveQuotaProviderType(candidate)).toBe(type);
+          expect(resolveQuotaProviderType(candidate)).toBe(onPage ? type : null);
           expect(resolveAuthFileQuotaType(candidate, 'all')).toBe(type);
           expect(resolveAuthFileQuotaType(candidate, type)).toBe(type);
           expect(resolveAuthFileQuotaType(candidate, 'plugin')).toBeNull();
@@ -94,7 +94,7 @@ describe('generic plugin quota', () => {
         expect(getQuotaCacheKey(file)).toBe(
           type === 'devin' ? `${type}.json${String.fromCharCode(0)}7` : `${type}.json`
         );
-        expect(classifyQuotaFiles([file]).map((entry) => entry.type)).toEqual([type]);
+        expect(classifyQuotaFiles([file]).map((entry) => entry.type)).toEqual(onPage ? [type] : []);
       }
     }
   });
