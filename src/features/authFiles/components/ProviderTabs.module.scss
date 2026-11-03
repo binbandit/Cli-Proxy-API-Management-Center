@@ -1,15 +1,14 @@
 @use '../../../styles/mixins' as *;
 
-/* 提供商过滤 tabs：安静的下划线式，品牌色只在图标 */
+/* Provider filter tabs: quiet pills; brand color appears only in the icons. */
 
 .tabs {
   display: flex;
-  align-items: stretch;
-  gap: 2px;
+  align-items: center;
+  gap: 4px;
   min-width: 0;
   max-width: 100%;
   overflow-x: auto;
-  border-bottom: 1px solid var(--border-color);
   scrollbar-width: none;
 
   &::-webkit-scrollbar {
@@ -18,35 +17,24 @@
 }
 
 .tab {
-  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   flex-shrink: 0;
+  height: 42px;
+  padding: 0 14px;
   border: 0;
+  border-radius: 10px;
   background: none;
   cursor: pointer;
-  padding: 8px 12px 11px;
-  border-radius: 8px 8px 0 0;
-  font-size: 13px;
-  font-weight: 550;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
   color: var(--text-secondary);
   white-space: nowrap;
   transition:
     color var(--dur-hover, 200ms) var(--ease-out-strong, ease-out),
     background-color var(--dur-hover, 200ms) var(--ease-out-strong, ease-out);
-
-  &::after {
-    content: '';
-    position: absolute;
-    left: 10px;
-    right: 10px;
-    bottom: -1px;
-    height: 2px;
-    border-radius: $radius-full;
-    background: transparent;
-    transition: background-color var(--dur-hover, 200ms) var(--ease-out-strong, ease-out);
-  }
 
   &:active {
     transform: translateY(0.5px);
@@ -61,22 +49,18 @@
 @media (hover: hover) and (pointer: fine) {
   .tab:hover {
     color: var(--text-primary);
-    background: color-mix(in srgb, var(--bg-tertiary) 55%, transparent);
+    background: color-mix(in srgb, var(--bg-tertiary) 60%, transparent);
   }
 }
 
 .tabActive {
   color: var(--text-primary);
-  font-weight: 650;
-
-  &::after {
-    background: var(--text-primary);
-  }
+  background: var(--bg-tertiary);
 }
 
 .tabGlyph {
   flex-shrink: 0;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
 
   .tabActive & {
     color: var(--text-primary);
@@ -88,20 +72,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 5px;
 }
 
 .tabIcon {
-  width: 15px;
-  height: 15px;
+  width: 18px;
+  height: 18px;
   object-fit: contain;
   display: block;
 }
 
 .tabIconFallback {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--text-secondary);
 }
@@ -111,25 +95,15 @@
 }
 
 .tabCount {
-  font-family: $font-mono;
-  font-size: 10.5px;
-  font-weight: 650;
+  margin-left: 2px;
+  font-size: 15px;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
-  line-height: 1.6;
   color: var(--text-tertiary);
-  padding: 0 6px;
-  border-radius: $radius-full;
-  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
-
-  .tabActive & {
-    color: var(--text-primary);
-    background: color-mix(in srgb, var(--text-primary) 10%, transparent);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tab,
-  .tab::after {
+  .tab {
     transition: none;
   }
 
@@ -142,5 +116,11 @@
   .tabs {
     padding-inline-end: 24px;
     mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent);
+  }
+
+  .tab {
+    height: 38px;
+    padding: 0 12px;
+    font-size: 15px;
   }
 }

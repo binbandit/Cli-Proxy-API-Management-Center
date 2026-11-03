@@ -31,7 +31,7 @@ import {
   IconSidebarSystem,
   IconChevronDown,
 } from '@/components/ui/icons';
-import { INLINE_LOGO_JPEG } from '@/assets/logoInline';
+import { BRAND_LOGO_URL, BRAND_NAME } from '@/assets/brand';
 import {
   useAuthStore,
   useConfigStore,
@@ -264,10 +264,10 @@ const THEME_CARDS: Array<{
     key: 'auto',
     labelKey: 'theme.auto',
     colors: {
-      bg: 'linear-gradient(135deg, #ffffff 0 50%, #111111 50% 100%)',
-      card: 'linear-gradient(135deg, #ffffff 0 50%, #1a1a1a 50% 100%)',
+      bg: 'linear-gradient(135deg, #ffffff 0 50%, #0a0a0a 50% 100%)',
+      card: 'linear-gradient(135deg, #ffffff 0 50%, #121212 50% 100%)',
       border: '#bdbdbd',
-      text: '#2d2a26',
+      text: '#0a0a0a',
       textMuted: 'linear-gradient(135deg, #c9c9c9 0 50%, #5a5a5a 50% 100%)',
     },
   },
@@ -277,31 +277,31 @@ const THEME_CARDS: Array<{
     colors: {
       bg: '#ffffff',
       card: '#ffffff',
-      border: '#e5e5e5',
-      text: '#2d2a26',
-      textMuted: '#a29c95',
+      border: '#ebebee',
+      text: '#0a0a0a',
+      textMuted: '#8e8e96',
     },
   },
   {
     key: 'light',
     labelKey: 'theme.light',
     colors: {
-      bg: '#faf9f5',
-      card: '#f0eee8',
-      border: '#e3e1db',
-      text: '#2d2a26',
-      textMuted: '#a29c95',
+      bg: '#fafafa',
+      card: '#ffffff',
+      border: '#e8e8eb',
+      text: '#0a0a0a',
+      textMuted: '#8e8e96',
     },
   },
   {
     key: 'dark',
     labelKey: 'theme.dark',
     colors: {
-      bg: '#151412',
-      card: '#1d1b18',
-      border: '#3a3530',
-      text: '#f6f4f1',
-      textMuted: '#9c958d',
+      bg: '#0a0a0a',
+      card: '#121212',
+      border: '#2a2a2a',
+      text: '#f5f5f5',
+      textMuted: '#737373',
     },
   },
 ];
@@ -349,8 +349,6 @@ export function MainLayout() {
   const themeMenuRef = useRef<HTMLDivElement | null>(null);
   const headerRef = useRef<HTMLElement | null>(null);
 
-  const fullBrandName = 'CLI Proxy API Management Center';
-  const abbrBrandName = t('title.abbr');
   const isLogsPage = location.pathname.startsWith('/logs');
   const isPluginResourcePage = location.pathname.startsWith('/plugin-pages');
   const showSidebarLabels = !sidebarCollapsed || sidebarOpen;
@@ -1151,12 +1149,11 @@ export function MainLayout() {
           className={`sidebar ${sidebarOpen ? 'open' : ''} ${sidebarCollapsed ? 'collapsed' : ''}`}
         >
           <div className="sidebar-header">
-            <div className="sidebar-brand" title={fullBrandName}>
-              <img src={INLINE_LOGO_JPEG} alt="CPAMC logo" className="sidebar-brand-logo" />
+            <div className="sidebar-brand" title={BRAND_NAME}>
+              <img src={BRAND_LOGO_URL} alt="" className="sidebar-brand-logo" />
               {showSidebarLabels && (
                 <span className="sidebar-brand-text">
-                  <span className="sidebar-brand-title">{abbrBrandName}</span>
-                  <span className="sidebar-brand-subtitle">{t('sidebar.subtitle')}</span>
+                  <span className="sidebar-brand-title">{BRAND_NAME}</span>
                 </span>
               )}
             </div>

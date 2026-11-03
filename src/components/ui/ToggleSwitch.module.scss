@@ -60,6 +60,8 @@
 
 .root input:checked + .track .thumb {
   transform: translateX(20px);
+  // The track takes the action color, which is near-white in dark mode.
+  background: var(--primary-contrast);
 }
 
 .label {
