@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -12,6 +12,7 @@ import {
   PLUGIN_RESOURCES_REFRESH_EVENT,
   resolvePluginAssetURL,
 } from './pluginResources';
+import { signInPluginFrame } from './pluginLogin';
 import styles from './PluginResourcePage.module.scss';
 
 const hasStatus = (error: unknown, status: number) => isRecord(error) && error.status === status;
@@ -34,6 +35,20 @@ export function PluginResourcePage() {
   const params = useParams<{ pluginId: string; menuIndex: string }>();
   const connectionStatus = useAuthStore((state) => state.connectionStatus);
   const apiBase = useAuthStore((state) => state.apiBase);
+  const managementKey = useAuthStore((state) => state.managementKey);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const signInPlugin = useCallback(() => {
+    if (iframeRef.current) {
+      signInPluginFrame(
+        iframeRef.current,
+        safeDecodeURIComponent(params.pluginId),
+        managementKey,
+        window.location.origin
+      );
+    }
+  }, [managementKey, params.pluginId]);
+
+  useEffect(signInPlugin, [signInPlugin]);
 
   const [data, setData] = useState<PluginListResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -113,6 +128,8 @@ export function PluginResourcePage() {
         </div>
       ) : (
         <iframe
+          ref={iframeRef}
+          onLoad={signInPlugin}
           className={styles.frame}
           src={iframeSrc}
           title={resource.label}
