@@ -13,6 +13,7 @@ import {
   resolvePluginAssetURL,
 } from './pluginResources';
 import { signInPluginFrame } from './pluginLogin';
+import { syncPluginTheme } from './pluginTheme';
 import styles from './PluginResourcePage.module.scss';
 
 const hasStatus = (error: unknown, status: number) => isRecord(error) && error.status === status;
@@ -49,6 +50,27 @@ export function PluginResourcePage() {
   }, [managementKey, params.pluginId]);
 
   useEffect(signInPlugin, [signInPlugin]);
+
+  const syncTheme = useCallback(() => {
+    if (iframeRef.current) {
+      syncPluginTheme(
+        iframeRef.current,
+        safeDecodeURIComponent(params.pluginId),
+        window.location.origin
+      );
+    }
+  }, [params.pluginId]);
+
+  // Follow theme switches, including the system theme under "auto", while the page is open.
+  useEffect(() => {
+    syncTheme();
+    const observer = new MutationObserver(syncTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+    return () => observer.disconnect();
+  }, [syncTheme]);
 
   const [data, setData] = useState<PluginListResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -129,7 +151,10 @@ export function PluginResourcePage() {
       ) : (
         <iframe
           ref={iframeRef}
-          onLoad={signInPlugin}
+          onLoad={() => {
+            syncTheme();
+            signInPlugin();
+          }}
           className={styles.frame}
           src={iframeSrc}
           title={resource.label}
