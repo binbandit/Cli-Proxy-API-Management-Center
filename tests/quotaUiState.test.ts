@@ -51,7 +51,7 @@ describe('quota ui state', () => {
       tab: 'codex',
       metric: 'drain',
       burnSpan: '6h',
-      future: 'half',
+      future: 'idle',
       showAccounts: true,
     } as const;
     writeQuotaUiState(state);

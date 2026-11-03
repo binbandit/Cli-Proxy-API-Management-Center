@@ -12,6 +12,7 @@ import type {
   LamplighterGroup,
   LamplighterHistory,
   LamplighterRange,
+  LamplighterReadiness,
   LamplighterSeries,
   LamplighterStatus,
   LamplighterWindow,
@@ -93,6 +94,10 @@ export function normalizeLamplighterStatus(raw: unknown): LamplighterStatus {
   const config = isRecord(data.config) ? data.config : {};
   return {
     version: text(data.version),
+    running: data.running === true,
+    enabled: data.enabled === true,
+    configError: text(data.config_error),
+    lockError: text(data.lock_error),
     now: parseInstant(data.now) ?? Date.now(),
     lastPoll: parseInstant(data.last_poll),
     nextPoll: parseInstant(data.next_poll),
@@ -100,6 +105,18 @@ export function normalizeLamplighterStatus(raw: unknown): LamplighterStatus {
     groupOrder: list(data.group_order).map(text).filter(Boolean),
     accounts: list(data.accounts).flatMap((item) => normalizeAccount(item) ?? []),
   };
+}
+
+/**
+ * Lamplighter answers actions such as a sync with 503 until its loop runs; status and
+ * history keep answering. The flags say which of the reasons applies.
+ */
+export function lamplighterReadiness(status: LamplighterStatus): LamplighterReadiness {
+  if (!status.enabled) return 'disabled';
+  if (status.running) return 'ready';
+  if (status.configError) return 'config';
+  if (status.lockError) return 'waiting';
+  return 'starting';
 }
 
 /** Points arrive as `[unix seconds, remaining, passive flag]`. */

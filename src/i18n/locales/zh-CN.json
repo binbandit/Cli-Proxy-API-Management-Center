@@ -1601,11 +1601,9 @@
     "metric_drain": "消耗速度",
     "burn_label": "消耗速度",
     "future_label": "未来用量",
-    "future_idle": "不使用",
-    "future_half": "当前的一半",
-    "future_same": "与当前相同",
-    "future_more": "当前的 1.5 倍",
-    "future_double": "当前的两倍",
+    "future_typical": "每周平均",
+    "future_recent": "与最近 {{span}} 相同",
+    "future_idle": "不再使用",
     "accounts_toggle": "账号",
     "range_label": "{{from}} 至 {{to}}",
     "range_earlier": "更早",
@@ -1643,7 +1641,12 @@
     "lamplighter_missing_title": "图表需要 Lamplighter 插件",
     "lamplighter_missing_desc": "Lamplighter 会在后台记录每个账号的额度，本页无需查询服务商即可绘制历史与预测。未安装时，账号需逐个刷新加载。",
     "lamplighter_install": "打开插件商店",
-    "account_read_now": "刚刚读取"
+    "account_read_now": "刚刚读取",
+    "lamplighter_starting": "Lamplighter 正在启动。它会在代理启动约 20 秒后开始记录，本页会自动更新。",
+    "lamplighter_disabled": "Lamplighter 已关闭，额度未被记录。请在插件设置中开启（plugins.configs.lamplighter.enabled）。",
+    "lamplighter_waiting": "Lamplighter 正在等待旧实例释放数据目录。旧的代理进程退出后即可恢复；若持续存在，说明有两个代理进程共用插件目录。",
+    "lamplighter_config": "Lamplighter 因设置错误无法启动：{{error}}",
+    "sync_unavailable": "Lamplighter 运行后可用"
   },
   "plugin_management": {
     "title": "插件管理",

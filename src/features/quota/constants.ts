@@ -24,6 +24,12 @@ export type PoolMetricId = (typeof POOL_METRICS)[number];
 export const BURN_SPANS = { '1h': 1, '3h': 3, '6h': 6 } as const;
 export type BurnSpanId = keyof typeof BURN_SPANS;
 
-/** Future demand as a multiple of today's burn rate. */
-export const FUTURE_USAGE = { idle: 0, half: 0.5, same: 1, more: 1.5, double: 2 } as const;
-export type FutureUsageId = keyof typeof FUTURE_USAGE;
+/**
+ * What the projection assumes about use from now on: the last week's average (idle nights
+ * included, like a weekly budget), the recent burn rate continuing, or no more use.
+ */
+export const FUTURE_USAGE = ['typical', 'recent', 'idle'] as const;
+export type FutureUsageId = (typeof FUTURE_USAGE)[number];
+
+/** Span the typical rate averages over. */
+export const TYPICAL_RATE_SPAN_MS = 7 * 24 * 60 * 60 * 1000;

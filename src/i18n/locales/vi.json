@@ -1559,11 +1559,9 @@
     "metric_drain": "Tốc độ tiêu hao",
     "burn_label": "Tốc độ tiêu hao",
     "future_label": "Mức dùng sắp tới",
-    "future_idle": "Không dùng",
-    "future_half": "Bằng nửa hiện tại",
-    "future_same": "Như hiện tại",
-    "future_more": "Gấp 1,5 lần",
-    "future_double": "Gấp đôi",
+    "future_typical": "Trung bình tuần",
+    "future_recent": "Như {{span}} vừa qua",
+    "future_idle": "Không dùng thêm",
     "accounts_toggle": "Tài khoản",
     "range_label": "{{from}} đến {{to}}",
     "range_earlier": "Trước đó",
@@ -1601,7 +1599,12 @@
     "lamplighter_missing_title": "Biểu đồ cần plugin Lamplighter",
     "lamplighter_missing_desc": "Lamplighter ghi hạn mức của mọi tài khoản ở chế độ nền, nên trang này vẽ được lịch sử và dự báo mà không cần truy vấn nhà cung cấp. Không có nó, tài khoản chỉ tải từng cái khi bạn làm mới.",
     "lamplighter_install": "Mở cửa hàng plugin",
-    "account_read_now": "Vừa đọc"
+    "account_read_now": "Vừa đọc",
+    "lamplighter_starting": "Lamplighter đang khởi động. Nó bắt đầu ghi khoảng 20 giây sau khi proxy khởi động, và trang này tự cập nhật.",
+    "lamplighter_disabled": "Lamplighter đang tắt nên hạn mức không được ghi. Hãy bật trong cài đặt plugin (plugins.configs.lamplighter.enabled).",
+    "lamplighter_waiting": "Lamplighter đang chờ bản trước đó nhả thư mục dữ liệu. Việc này hết khi tiến trình proxy cũ thoát; nếu kéo dài, có hai tiến trình proxy dùng chung thư mục plugin.",
+    "lamplighter_config": "Lamplighter không khởi động được do lỗi cài đặt: {{error}}",
+    "sync_unavailable": "Dùng được khi Lamplighter đang chạy"
   },
   "plugin_management": {
     "title": "Quản lý Plugin",

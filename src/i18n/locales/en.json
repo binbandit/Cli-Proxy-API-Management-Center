@@ -1603,11 +1603,9 @@
     "metric_drain": "Drain rate",
     "burn_label": "Burn rate",
     "future_label": "Future usage",
-    "future_idle": "No usage",
-    "future_half": "Half of now",
-    "future_same": "Same as now",
-    "future_more": "1.5× now",
-    "future_double": "Double now",
+    "future_typical": "Weekly average",
+    "future_recent": "Same as last {{span}}",
+    "future_idle": "No more usage",
     "accounts_toggle": "Accounts",
     "range_label": "{{from}} to {{to}}",
     "range_earlier": "Earlier",
@@ -1645,7 +1643,12 @@
     "lamplighter_missing_title": "Charts need the Lamplighter plugin",
     "lamplighter_missing_desc": "Lamplighter records every account’s quota in the background, so this page can chart history and projections without querying providers. Without it, accounts load one at a time when you refresh them.",
     "lamplighter_install": "Open Plugin Store",
-    "account_read_now": "Read just now"
+    "account_read_now": "Read just now",
+    "lamplighter_starting": "Lamplighter is starting. It begins recording about 20 seconds after the proxy starts, and this page updates on its own.",
+    "lamplighter_disabled": "Lamplighter is turned off, so quota is not being recorded. Turn it on in the plugin settings (plugins.configs.lamplighter.enabled).",
+    "lamplighter_waiting": "Lamplighter is waiting for a previous copy of itself to let go of its data folder. This clears once the old proxy process exits; if it lasts, two proxy processes share the plugin folder.",
+    "lamplighter_config": "Lamplighter cannot start because of a settings error: {{error}}",
+    "sync_unavailable": "Available once Lamplighter is running"
   },
   "plugin_management": {
     "title": "Plugin Management",

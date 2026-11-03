@@ -1629,11 +1629,9 @@
     "metric_drain": "消耗速度",
     "burn_label": "消耗速度",
     "future_label": "未來用量",
-    "future_idle": "不使用",
-    "future_half": "目前的一半",
-    "future_same": "與目前相同",
-    "future_more": "目前的 1.5 倍",
-    "future_double": "目前的兩倍",
+    "future_typical": "每週平均",
+    "future_recent": "與最近 {{span}} 相同",
+    "future_idle": "不再使用",
     "accounts_toggle": "帳號",
     "range_label": "{{from}} 至 {{to}}",
     "range_earlier": "更早",
@@ -1671,7 +1669,12 @@
     "lamplighter_missing_title": "圖表需要 Lamplighter 外掛",
     "lamplighter_missing_desc": "Lamplighter 會在背景記錄每個帳號的額度，本頁無需查詢服務商即可繪製歷史與預測。未安裝時，帳號需逐一重新整理載入。",
     "lamplighter_install": "開啟外掛商店",
-    "account_read_now": "剛剛讀取"
+    "account_read_now": "剛剛讀取",
+    "lamplighter_starting": "Lamplighter 正在啟動。它會在代理啟動約 20 秒後開始記錄，本頁會自動更新。",
+    "lamplighter_disabled": "Lamplighter 已關閉，額度未被記錄。請在外掛設定中開啟（plugins.configs.lamplighter.enabled）。",
+    "lamplighter_waiting": "Lamplighter 正在等待舊實例釋放資料目錄。舊的代理程序結束後即可恢復；若持續存在，代表有兩個代理程序共用外掛目錄。",
+    "lamplighter_config": "Lamplighter 因設定錯誤無法啟動：{{error}}",
+    "sync_unavailable": "Lamplighter 執行後可用"
   },
   "plugin_management": {
     "title": "插件管理",

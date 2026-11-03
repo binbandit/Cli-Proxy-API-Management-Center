@@ -128,6 +128,10 @@ export function buildPools({ status, history, recent, weightOf }: BuildPoolsInpu
       ];
     });
     if (accounts.length === 0) continue;
+    // Plan weights only compare accounts within a pool, so the smallest plan counts as 1: a
+    // pool of three equal plans holds 300%, whatever their absolute size.
+    const smallest = Math.min(...accounts.map((account) => account.weight));
+    if (smallest > 0) accounts.forEach((account) => (account.weight /= smallest));
     accounts.sort((a, b) => a.title.localeCompare(b.title));
     pools.push({
       id: `${sourceLabel}:${kind}`,
@@ -246,21 +250,30 @@ export interface BurnRates {
   byAccount: Map<string, number>;
 }
 
+/** Readings shorter than this cannot give a rate. */
+const MIN_RATE_SPAN_MS = HOUR_MS;
+
+/**
+ * Average use over the trailing span, idle time included. An account whose readings start
+ * inside the span is averaged over the part it covers, so a newly added credential is not
+ * diluted by hours it did not exist.
+ */
 export function burnRates(pool: Pool, spanMs: number, now: number): BurnRates {
-  const from = now - spanMs;
-  const hours = spanMs / HOUR_MS;
+  const start = now - spanMs;
   const byAccount = new Map<string, number>();
   let total = 0;
   let covered = false;
   for (const account of pool.accounts) {
     // Prefer full-resolution readings when they reach back far enough.
     const samples =
-      account.recentSamples.length > 1 && account.recentSamples[0].at <= from
+      account.recentSamples.length > 1 && account.recentSamples[0].at <= start
         ? account.recentSamples
         : account.samples;
-    if (samples.length < 2 || samples[samples.length - 1].at <= from) continue;
+    if (samples.length < 2 || samples[samples.length - 1].at <= start) continue;
+    const from = Math.max(start, samples[0].at);
+    if (now - from < Math.min(spanMs, MIN_RATE_SPAN_MS)) continue;
     covered = true;
-    const rate = (account.weight * consumedBetween(samples, from, now)) / hours;
+    const rate = (account.weight * consumedBetween(samples, from, now)) / ((now - from) / HOUR_MS);
     byAccount.set(account.authIndex, rate);
     total += rate;
   }
@@ -324,10 +337,8 @@ export interface ProjectionOptions {
   now: number;
   horizon: number;
   stepMs: number;
-  /** Pool percent per hour each account currently draws. */
+  /** Pool percent per hour each account is assumed to draw from now on. */
   shares: Map<string, number>;
-  /** Multiplier on today's demand, such as 0.5 for half the current use. */
-  demandScale: number;
 }
 
 export interface Projection {
@@ -341,14 +352,14 @@ export interface Projection {
 }
 
 /**
- * Project the pool forward. Demand stays at today's rate (times `demandScale`), and each
- * account keeps its share of it, as a pacing plugin or round-robin would route it. When an
+ * Project the pool forward. Demand stays at the given per-account rates, and each account
+ * keeps its share of it, as a pacing plugin or round-robin would route it. When an
  * account runs dry its share moves to the accounts that still have quota; when every
  * remaining account is idle, demand spreads by weight. Resets refill an account to 100% at
  * its reset time and repeat every period.
  */
 export function projectPool(pool: Pool, options: ProjectionOptions): Projection {
-  const { now, horizon, stepMs, shares, demandScale } = options;
+  const { now, horizon, stepMs, shares } = options;
   const accounts = pool.accounts;
   const remaining = accounts.map((account) => account.remaining);
   const nextReset = accounts.map((account, index) => {
@@ -361,7 +372,7 @@ export function projectPool(pool: Pool, options: ProjectionOptions): Projection 
     return at;
   });
   const share = accounts.map((account) => Math.max(0, shares.get(account.authIndex) ?? 0));
-  const demand = share.reduce((sum, value) => sum + value, 0) * demandScale;
+  const demand = share.reduce((sum, value) => sum + value, 0);
 
   const total = () =>
     accounts.reduce((sum, account, index) => sum + account.weight * remaining[index], 0);

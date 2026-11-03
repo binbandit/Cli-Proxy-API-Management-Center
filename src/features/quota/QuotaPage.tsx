@@ -13,7 +13,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { authFilesApi } from '@/services/api';
+import { authFilesApi, lamplighterReadiness } from '@/services/api';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { IconChevronLeft, IconChevronRight } from '@/components/ui/icons';
@@ -24,7 +24,13 @@ import { useHeaderRefresh } from '@/hooks/useHeaderRefresh';
 import { useNow } from '@/hooks/useNow';
 import { useRevealGroup } from '@/hooks/motion';
 import { useAuthStore, useNotificationStore, useQuotaStore, useThemeStore } from '@/stores';
-import type { AuthFileItem, LamplighterAccount, LamplighterRange, ResolvedTheme } from '@/types';
+import type {
+  ApiError,
+  AuthFileItem,
+  LamplighterAccount,
+  LamplighterRange,
+  ResolvedTheme,
+} from '@/types';
 import { normalizeAuthIndex } from '@/utils/authIndex';
 import { getQuotaCacheKey, getQuotaDisplayName } from '@/utils/quota/identity';
 import { normalizeProviderId } from '@/utils/quota/validators';
@@ -38,6 +44,7 @@ import {
   FUTURE_USAGE,
   QUOTA_TAB_ORDER,
   type BurnSpanId,
+  TYPICAL_RATE_SPAN_MS,
   type FutureUsageId,
   type PoolMetricId,
   type QuotaPageProvider,
@@ -61,7 +68,6 @@ import { useLamplighter } from './pool/useLamplighter';
 import styles from './QuotaPage.module.scss';
 
 const BURN_SPAN_IDS = Object.keys(BURN_SPANS) as BurnSpanId[];
-const FUTURE_USAGE_IDS = Object.keys(FUTURE_USAGE) as FutureUsageId[];
 /** The chart shows two weeks: three days back and the rest ahead. */
 const VIEW_DAYS = 14;
 const VIEW_LEAD_DAYS = 3;
@@ -97,7 +103,7 @@ export function QuotaPage() {
   const [tab, setTab] = useState<QuotaTabId>(saved.tab ?? 'all');
   const [metric, setMetric] = useState<PoolMetricId>(saved.metric ?? 'remaining');
   const [burnSpan, setBurnSpan] = useState<BurnSpanId>(saved.burnSpan ?? '3h');
-  const [future, setFuture] = useState<FutureUsageId>(saved.future ?? 'same');
+  const [future, setFuture] = useState<FutureUsageId>(saved.future ?? 'typical');
   const [showAccounts, setShowAccounts] = useState(saved.showAccounts ?? false);
   const [showEmails, setShowEmails] = useState(false);
   const [weekOffset, setWeekOffset] = useState(0);
@@ -150,7 +156,8 @@ export function QuotaPage() {
   const viewStart = shiftDays(startOfLocalDay(shiftDays(now, -VIEW_LEAD_DAYS)), weekOffset * 7);
   const viewEnd = shiftDays(viewStart, VIEW_DAYS);
   const { feed, syncing, syncNow, reload } = useLamplighter(
-    historyRangeFor(now - viewStart),
+    // The typical rate needs a full week of readings, even when the view starts later.
+    historyRangeFor(Math.max(now - viewStart, TYPICAL_RATE_SPAN_MS)),
     !disableControls
   );
 
@@ -344,11 +351,19 @@ export function QuotaPage() {
   ).length;
   const loadedCount = entries.filter((entry) => getQuota(entry)?.status === 'success').length;
 
+  const readiness = ready ? lamplighterReadiness(ready.status) : null;
+
   const handleSync = () => {
     syncNow().catch((err: unknown) =>
       showNotification(
         t('quota_management.sync_failed', {
-          message: err instanceof Error ? err.message : String(err),
+          // A 503 means the plugin is not running yet; its own text is not localized.
+          message:
+            (err as ApiError)?.status === 503
+              ? t('quota_management.lamplighter_starting')
+              : err instanceof Error
+                ? err.message
+                : String(err),
         }),
         'error'
       )
@@ -358,7 +373,7 @@ export function QuotaPage() {
   const settings = {
     metric,
     burnSpanMs: BURN_SPANS[burnSpan] * HOUR_MS,
-    demandScale: FUTURE_USAGE[future],
+    future,
     viewStart,
     viewEnd,
     now,
@@ -389,9 +404,13 @@ export function QuotaPage() {
         {...(ready
           ? {
               actionLabel: t('quota_management.sync_now'),
-              actionTitle: t('quota_management.sync_now_hint'),
+              actionTitle: t(
+                readiness === 'ready'
+                  ? 'quota_management.sync_now_hint'
+                  : 'quota_management.sync_unavailable'
+              ),
               busy: syncing,
-              disabled: disableControls,
+              disabled: disableControls || readiness !== 'ready',
               onAction: handleSync,
             }
           : {
@@ -450,12 +469,12 @@ export function QuotaPage() {
                 size="sm"
                 fullWidth={false}
                 ariaLabel={t('quota_management.future_label')}
-                options={FUTURE_USAGE_IDS.map((value) => ({
+                options={FUTURE_USAGE.map((value) => ({
                   value,
-                  label: t(`quota_management.future_${value}`),
+                  label: t(`quota_management.future_${value}`, { span: burnSpan }),
                 }))}
                 onChange={(value) => {
-                  const next = FUTURE_USAGE_IDS.find((id) => id === value) ?? 'same';
+                  const next = FUTURE_USAGE.find((id) => id === value) ?? 'typical';
                   setFuture(next);
                   writeQuotaUiState({ future: next });
                 }}
@@ -518,6 +537,15 @@ export function QuotaPage() {
         {feed.phase === 'error' && (
           <div className={styles.errorBanner} role="alert">
             {t('quota_management.lamplighter_error', { message: feed.message })}
+          </div>
+        )}
+        {ready && readiness !== 'ready' && (
+          <div
+            className={styles.staleBanner}
+            role="status"
+            title={ready.status.lockError || ready.status.configError || undefined}
+          >
+            {t(`quota_management.lamplighter_${readiness}`, { error: ready.status.configError })}
           </div>
         )}
         {ready?.pollError && (

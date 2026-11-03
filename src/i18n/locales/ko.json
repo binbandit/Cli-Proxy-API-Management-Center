@@ -1603,11 +1603,9 @@
     "metric_drain": "소진 속도",
     "burn_label": "소진 속도",
     "future_label": "향후 사용량",
-    "future_idle": "사용 안 함",
-    "future_half": "지금의 절반",
-    "future_same": "지금과 같음",
-    "future_more": "지금의 1.5배",
-    "future_double": "지금의 2배",
+    "future_typical": "주간 평균",
+    "future_recent": "최근 {{span}}과 같음",
+    "future_idle": "더 이상 사용 안 함",
     "accounts_toggle": "계정",
     "range_label": "{{from}} ~ {{to}}",
     "range_earlier": "이전",
@@ -1645,7 +1643,12 @@
     "lamplighter_missing_title": "차트에는 Lamplighter 플러그인이 필요합니다",
     "lamplighter_missing_desc": "Lamplighter는 모든 계정의 할당량을 백그라운드에서 기록하므로, 이 페이지는 제공업체에 요청하지 않고도 기록과 예측을 그릴 수 있습니다. 플러그인이 없으면 계정을 새로 고칠 때 하나씩 불러옵니다.",
     "lamplighter_install": "플러그인 스토어 열기",
-    "account_read_now": "방금 읽음"
+    "account_read_now": "방금 읽음",
+    "lamplighter_starting": "Lamplighter가 시작 중입니다. 프록시 시작 약 20초 후 기록을 시작하며, 이 페이지는 자동으로 업데이트됩니다.",
+    "lamplighter_disabled": "Lamplighter가 꺼져 있어 할당량이 기록되지 않습니다. 플러그인 설정에서 켜세요 (plugins.configs.lamplighter.enabled).",
+    "lamplighter_waiting": "Lamplighter가 이전 인스턴스가 데이터 폴더를 놓아주기를 기다리고 있습니다. 이전 프록시 프로세스가 종료되면 해결되며, 계속되면 두 프록시 프로세스가 플러그인 폴더를 공유하고 있는 것입니다.",
+    "lamplighter_config": "설정 오류로 Lamplighter를 시작할 수 없습니다: {{error}}",
+    "sync_unavailable": "Lamplighter가 실행되면 사용할 수 있습니다"
   },
   "plugin_management": {
     "title": "플러그인 관리",

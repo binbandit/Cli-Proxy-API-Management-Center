@@ -40,7 +40,7 @@ export const readQuotaUiState = (): QuotaUiState | null => {
       tab: isQuotaTabId(stored.tab) ? stored.tab : undefined,
       metric: oneOf(POOL_METRICS, stored.metric),
       burnSpan: oneOf(Object.keys(BURN_SPANS) as BurnSpanId[], stored.burnSpan),
-      future: oneOf(Object.keys(FUTURE_USAGE) as FutureUsageId[], stored.future),
+      future: oneOf(FUTURE_USAGE, stored.future),
       showAccounts: typeof stored.showAccounts === 'boolean' ? stored.showAccounts : undefined,
     };
   } catch {

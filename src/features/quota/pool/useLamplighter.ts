@@ -2,12 +2,12 @@
  * Live Lamplighter readings for the quota page.
  *
  * Reads only the plugin's stored data, never the providers, so it can poll freely: every
- * 30 seconds while the tab is visible, and at once when the tab comes back. A failed poll
- * keeps the last good readings on screen.
+ * 30 seconds while the tab is visible (10 while the plugin starts), and at once when the tab
+ * comes back. A failed poll keeps the last good readings on screen.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { apiClient, lamplighterApi } from '@/services/api';
+import { apiClient, lamplighterApi, lamplighterReadiness } from '@/services/api';
 import type { ApiError, LamplighterHistory, LamplighterRange, LamplighterStatus } from '@/types';
 
 export type LamplighterFeed =
@@ -24,6 +24,8 @@ export type LamplighterFeed =
     };
 
 const POLL_MS = 30_000;
+/** Polling interval while Lamplighter is starting, so the charts appear soon after. */
+const STARTING_POLL_MS = 10_000;
 
 const errorMessage = (error: unknown) =>
   error instanceof Error && error.message ? error.message : String(error);
@@ -32,6 +34,7 @@ export function useLamplighter(range: LamplighterRange, enabled: boolean) {
   const [feed, setFeed] = useState<LamplighterFeed>({ phase: 'loading' });
   const [syncing, setSyncing] = useState(false);
   const requestRef = useRef(0);
+  const pollMsRef = useRef(POLL_MS);
 
   const load = useCallback(async () => {
     const requestId = ++requestRef.current;
@@ -45,6 +48,10 @@ export function useLamplighter(range: LamplighterRange, enabled: boolean) {
       lamplighterApi.history('6h'),
     ]);
     if (!isCurrent()) return;
+    pollMsRef.current =
+      status.status === 'fulfilled' && lamplighterReadiness(status.value) !== 'ready'
+        ? STARTING_POLL_MS
+        : POLL_MS;
     if (status.status === 'rejected') {
       if ((status.reason as ApiError)?.status === 404) {
         setFeed({ phase: 'missing' });
@@ -80,15 +87,21 @@ export function useLamplighter(range: LamplighterRange, enabled: boolean) {
 
   useEffect(() => {
     if (!enabled) return;
-    void load();
-    const poll = () => {
+    let timer: number | undefined;
+    let stopped = false;
+    const poll = async () => {
+      if (document.visibilityState === 'visible') await load();
+      if (!stopped) timer = window.setTimeout(poll, pollMsRef.current);
+    };
+    const onVisible = () => {
       if (document.visibilityState === 'visible') void load();
     };
-    const timer = window.setInterval(poll, POLL_MS);
-    document.addEventListener('visibilitychange', poll);
+    void poll();
+    document.addEventListener('visibilitychange', onVisible);
     return () => {
-      window.clearInterval(timer);
-      document.removeEventListener('visibilitychange', poll);
+      stopped = true;
+      window.clearTimeout(timer);
+      document.removeEventListener('visibilitychange', onVisible);
       requestRef.current += 1;
     };
   }, [enabled, load]);

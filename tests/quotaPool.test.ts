@@ -14,6 +14,7 @@ import {
   type PoolAccount,
 } from '@/features/quota/pool/poolModel';
 import {
+  lamplighterReadiness,
   normalizeLamplighterHistory,
   normalizeLamplighterStatus,
 } from '@/services/api/lamplighter';
@@ -125,6 +126,38 @@ describe('building pools', () => {
   });
 });
 
+describe('plan weights', () => {
+  const statusWith = (weights: number[]): LamplighterStatus => ({
+    version: '1',
+    now: NOW,
+    lastPoll: null,
+    nextPoll: null,
+    accountWeights: {},
+    groupOrder: ['Claude'],
+    accounts: weights.map((_, index) =>
+      lamplighterAccount(String(index), [{ id: 'seven_day', kind: '7d', remaining: 50 }])
+    ),
+  });
+  const pool = (weights: number[]) =>
+    buildPools({
+      status: statusWith(weights),
+      history: null,
+      recent: null,
+      weightOf: (item) => weights[Number(item.authIndex)],
+    })[0];
+
+  test('three accounts on the same plan make a 300% pool, whatever the plan size', () => {
+    const claude = pool([20, 20, 20]);
+    expect(claude.accounts.map((item) => item.weight)).toEqual([1, 1, 1]);
+    expect(poolCapacity(claude)).toBe(300);
+    expect(poolRemaining(claude)).toBe(150);
+  });
+
+  test('mixed plans keep their ratio with the smallest plan counting as one', () => {
+    expect(pool([5, 20]).accounts.map((item) => item.weight)).toEqual([1, 4]);
+  });
+});
+
 describe('recorded history', () => {
   test('sums weighted readings and ends at now with the current readings', () => {
     const subject = pool([
@@ -200,6 +233,20 @@ describe('burn rates', () => {
     expect(burnRates(pool([account({ authIndex: 'c' })]), HOUR, NOW).pool).toBeNull();
   });
 
+  test('an account newer than the span is averaged over the hours it has readings for', () => {
+    const subject = pool([
+      account({
+        authIndex: 'new',
+        samples: [
+          { at: NOW - 2 * HOUR, remaining: 100 },
+          { at: NOW, remaining: 90 },
+        ],
+      }),
+    ]);
+    // 10% over the 2 hours it existed, not spread over a whole week.
+    expect(burnRates(subject, 7 * DAY, NOW).pool).toBeCloseTo(5);
+  });
+
   test('recorded drain matches the trailing-span rate', () => {
     const subject = pool([account({ authIndex: 'a', samples })]);
     const drain = recordedDrain(subject, NOW - HOUR, NOW, HOUR, 3 * HOUR);
@@ -222,7 +269,6 @@ describe('projection', () => {
         ['a', 10],
         ['b', 10],
       ]),
-      demandScale: 1,
     });
     expect(result.firstEmpty?.account.authIndex).toBe('a');
     expect(result.firstEmpty?.at).toBe(NOW + HOUR);
@@ -241,7 +287,6 @@ describe('projection', () => {
       horizon: NOW + 5 * HOUR,
       stepMs: HOUR,
       shares: new Map(),
-      demandScale: 1,
     });
     expect(result.nextReset).toEqual({ at: NOW + 90 * 60_000, gain: 70 });
     expect(result.points).toContainEqual({ at: NOW + 90 * 60_000, value: 130 });
@@ -257,7 +302,6 @@ describe('projection', () => {
       horizon: NOW + 8 * DAY,
       stepMs: HOUR,
       shares: new Map([['a', 0.5]]),
-      demandScale: 1,
     });
     expect(result.points[0]).toEqual({ at: NOW, value: 100 });
     expect(result.poolEmpty).toBeNull();
@@ -273,7 +317,6 @@ describe('projection', () => {
       horizon: NOW + 2 * DAY,
       stepMs: HOUR,
       shares: new Map([['a', 5]]),
-      demandScale: 1,
     });
     expect(result.poolEmpty).toBe(NOW);
     expect(result.nextReset).toEqual({ at: NOW + DAY, gain: 100 });
@@ -291,8 +334,7 @@ describe('projection', () => {
       now: NOW,
       horizon: NOW + 10 * HOUR,
       stepMs: HOUR,
-      shares: new Map([['busy', 10]]),
-      demandScale: 2,
+      shares: new Map([['busy', 20]]),
     });
     // 20%/h on 5% empties busy in 15 minutes; the rest of the demand moves to idle at once,
     // so the pool (405) serves all 20 pool %/h for the full ten hours.
@@ -337,6 +379,19 @@ describe('Lamplighter normalization', () => {
       { id: 'seven_day', label: '7d', kind: '7d', remaining: 100, resetAt: null, observedAt: null },
       { id: 'fable', label: 'fable', kind: 'other', remaining: 0, resetAt: null, observedAt: null },
     ]);
+  });
+
+  test('says why Lamplighter is not recording', () => {
+    const status = (raw: Record<string, unknown>) => normalizeLamplighterStatus(raw);
+    expect(lamplighterReadiness(status({ enabled: true, running: true }))).toBe('ready');
+    expect(lamplighterReadiness(status({ enabled: true, running: false }))).toBe('starting');
+    expect(lamplighterReadiness(status({ enabled: false, running: true }))).toBe('disabled');
+    expect(
+      lamplighterReadiness(status({ enabled: true, running: false, lock_error: 'held' }))
+    ).toBe('waiting');
+    expect(
+      lamplighterReadiness(status({ enabled: true, running: false, config_error: 'bad' }))
+    ).toBe('config');
   });
 
   test('turns point triples into sorted millisecond samples', () => {

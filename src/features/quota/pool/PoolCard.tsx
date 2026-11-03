@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { ResolvedTheme } from '@/types';
 import { getAuthFileIcon, getTypeLabel } from '@/features/authFiles/constants';
 import { DAY_MS, MINUTE_MS } from '@/utils/time/durations';
+import { TYPICAL_RATE_SPAN_MS, type FutureUsageId } from '../constants';
 import { PoolChart, type ChartResetMark } from './PoolChart';
 import {
   burnRates,
@@ -30,7 +31,7 @@ export type PoolMetric = 'remaining' | 'drain';
 export interface PoolViewSettings {
   metric: PoolMetric;
   burnSpanMs: number;
-  demandScale: number;
+  future: FutureUsageId;
   viewStart: number;
   viewEnd: number;
   now: number;
@@ -92,7 +93,7 @@ export function PoolCard({
 }: PoolCardProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.resolvedLanguage;
-  const { metric, burnSpanMs, demandScale, viewStart, viewEnd, now } = settings;
+  const { metric, burnSpanMs, future, viewStart, viewEnd, now } = settings;
   const color = poolColor(pool.sourceLabel);
   const capacity = poolCapacity(pool);
   const remaining = poolRemaining(pool);
@@ -105,12 +106,17 @@ export function PoolCard({
   const model = useMemo(() => {
     const step = chartStep(viewEnd - viewStart);
     const burn = burnRates(pool, burnSpanMs, now);
+    const shares =
+      future === 'recent'
+        ? burn.byAccount
+        : future === 'typical'
+          ? burnRates(pool, TYPICAL_RATE_SPAN_MS, now).byAccount
+          : new Map<string, number>();
     const projection = projectPool(pool, {
       now,
       horizon: Math.max(viewEnd, now + HORIZON_MS),
       stepMs: step,
-      shares: burn.byAccount,
-      demandScale,
+      shares,
     });
     const recordFrom = Math.min(now, viewStart - step);
     const recorded = viewStart < now ? recordedSeries(pool, recordFrom, now, step) : [];
@@ -129,7 +135,7 @@ export function PoolCard({
         ? recordedDrain(pool, recordFrom, now, step, burnSpanMs)
         : [];
     return { burn, projection, recorded, resets, drain };
-  }, [pool, burnSpanMs, demandScale, metric, now, viewStart, viewEnd]);
+  }, [pool, burnSpanMs, future, metric, now, viewStart, viewEnd]);
 
   const horizonLabel = formatDate(now + HORIZON_MS, locale);
   const notBy = t('quota_management.stat_not_by', { date: horizonLabel });

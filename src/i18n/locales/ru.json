@@ -1606,11 +1606,9 @@
     "metric_drain": "Скорость расхода",
     "burn_label": "Расход",
     "future_label": "Дальнейшее использование",
-    "future_idle": "Без использования",
-    "future_half": "Вдвое меньше",
-    "future_same": "Как сейчас",
-    "future_more": "В 1,5 раза больше",
-    "future_double": "Вдвое больше",
+    "future_typical": "Среднее за неделю",
+    "future_recent": "Как за последние {{span}}",
+    "future_idle": "Без дальнейшего использования",
     "accounts_toggle": "Аккаунты",
     "range_label": "{{from}} – {{to}}",
     "range_earlier": "Раньше",
@@ -1650,7 +1648,12 @@
     "lamplighter_missing_title": "Для графиков нужен плагин Lamplighter",
     "lamplighter_missing_desc": "Lamplighter в фоне записывает квоты всех аккаунтов, поэтому страница строит историю и прогнозы без запросов к провайдерам. Без него аккаунты загружаются по одному при обновлении.",
     "lamplighter_install": "Открыть магазин плагинов",
-    "account_read_now": "Прочитано только что"
+    "account_read_now": "Прочитано только что",
+    "lamplighter_starting": "Lamplighter запускается. Запись начинается примерно через 20 секунд после старта прокси; страница обновится сама.",
+    "lamplighter_disabled": "Lamplighter выключен, квоты не записываются. Включите его в настройках плагина (plugins.configs.lamplighter.enabled).",
+    "lamplighter_waiting": "Lamplighter ждёт, пока предыдущий экземпляр освободит папку данных. Это пройдёт, когда старый процесс прокси завершится; если нет, папку плагина используют два процесса прокси.",
+    "lamplighter_config": "Lamplighter не может запуститься из-за ошибки настроек: {{error}}",
+    "sync_unavailable": "Доступно, когда Lamplighter запущен"
   },
   "plugin_management": {
     "title": "Управление плагинами",

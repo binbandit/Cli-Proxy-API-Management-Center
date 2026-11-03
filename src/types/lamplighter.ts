@@ -44,6 +44,14 @@ export interface LamplighterAccount {
 
 export interface LamplighterStatus {
   version: string;
+  /** The background loop runs about 20 seconds after the proxy starts. */
+  running: boolean;
+  /** Turned on in `plugins.configs.lamplighter`. */
+  enabled: boolean;
+  /** Why the settings could not be applied, in the plugin's own language. */
+  configError: string;
+  /** Why the data directory is unavailable, usually another instance still holding it. */
+  lockError: string;
   now: number;
   lastPoll: number | null;
   nextPoll: number | null;
@@ -76,6 +84,9 @@ export interface LamplighterHistory {
   to: number;
   series: LamplighterSeries[];
 }
+
+/** Whether Lamplighter is recording, and if not, why. */
+export type LamplighterReadiness = 'ready' | 'starting' | 'disabled' | 'waiting' | 'config';
 
 /** Named history ranges the plugin serves; each ends now. */
 export type LamplighterRange = '6h' | '4d' | '8d' | '15d' | '36d';
